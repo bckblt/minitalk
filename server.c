@@ -1,7 +1,4 @@
-#include <signal.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
+#include "minitalk.h"
 
 void handle_signal(int signal)
 {
@@ -13,7 +10,7 @@ void handle_signal(int signal)
 
     if (bit == 0)
     {
-        printf("%c", set);
+        ft_printf("%c", set);
         bit = 7;
         set = 0;
     }
@@ -23,7 +20,7 @@ void handle_signal(int signal)
 
 int main()
 {
-    printf("Server PID: %d\n", getpid());
+    ft_printf("Server PID: %d\n", getpid());
 
     signal(SIGUSR1, handle_signal);
     signal(SIGUSR2, handle_signal);

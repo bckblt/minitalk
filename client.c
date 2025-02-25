@@ -1,29 +1,44 @@
 #include "minitalk.h"
 
-void message_sender(int pid, char *str)
+volatile sig_atomic_t	g_flag = 0;
+
+void	flg_handler(int sig)
 {
-	int bit;
-	int j;
+	(void)sig;
+	if (sig == SIGUSR1)
+		g_flag = 1;
+}
+
+int ft_atoi(char *str)
+{
 	int i;
-	char c;
+	int	res;
 
 	i = 0;
+	res = 0;
 	while (str[i])
 	{
-		c = str[i];
-		j = 7;
-		while (j >= 0)
-		{
-			bit = (c >> j) & 1;
-			if(bit)
-				kill(pid, SIGUSR1);
-			else
-				kill(pid, SIGUSR2);
-
-			usleep(100);
-				j--;
-		}
+		res = (str[i] - '0') + (res * 10);
 		i++;
+	}
+	return (res);
+}
+
+void message_sender(int pid, char c)
+{
+	int	bit;
+
+	bit = 0;
+	while (bit < 8)
+	{
+		if (c & (1 << bit))
+			kill(pid, SIGUSR1);
+		else
+			kill(pid, SIGUSR2);
+		while (!g_flag)
+			;
+		g_flag = 0;
+		bit++;
 	}
 }
 
@@ -38,9 +53,10 @@ int main(int argc, char *argv[])
 	}
 
 	pid = ft_atoi(argv[1]);
+	signal(SIGUSR1, flg_handler);
 	message = argv[2];
-
-	message_sender(pid, message);
-	ft_newline(pid);
+	while (*message)
+		message_sender(pid, *message++);
+	message_sender(pid, '\0');
 	return 0;
 }

@@ -2,12 +2,13 @@ NAMESERVER = server
 NAMECLIENT = client
 LIB = ft_printf/libftprintf.a
 SRCSERVER = server.c
-SRCCLIENT = client.c \
-			utils.c
+SRCCLIENT = client.c
 CFLAGS = -Wall -Wextra -Werror
 CC = gcc
 OBJSERVER = $(SRCSERVER:.c=.o)
 OBJCLIENT = $(SRCCLIENT:.c=.o)
+
+RM = rm -rf
 
 all: $(LIB) $(NAMESERVER) $(NAMECLIENT)
 
@@ -20,13 +21,10 @@ $(NAMESERVER) : $(OBJSERVER)
 $(NAMECLIENT) : $(OBJCLIENT)
 	$(CC) $(OBJCLIENT) -o $(NAMECLIENT) $(LIB)
 
+
 clean:
-	rm -rf $(OBJSERVER) $(OBJCLIENT)
-	rm -rf ./ft_printf/ft_utils.o
-	rm -rf ./ft_printf/ft_printf.o
-	rm -rf ./ft_printf/libft.o
-
-
+	@${RM} $(OBJSERVER) $(OBJCLIENT)
+	@${MAKE} -C ./ft_printf fclean
 
 fclean: clean
 	rm -rf $(NAMESERVER) $(NAMECLIENT)

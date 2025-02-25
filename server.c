@@ -1,30 +1,38 @@
 #include "minitalk.h"
 
-void handle_signal(int signal)
+void handle_signal(int sig, siginfo_t *info, void *context)
 {
-    static int bit = 7;
-    static int set = 0;
-    
-    if (signal == SIGUSR1)
-        set += (1 << bit);
+	static int	bit = 0;
+	static char	c = 0;
 
-    if (bit == 0)
-    {
-        ft_printf("%c", set);
-        bit = 7;
-        set = 0;
-    }
-    else
-        bit--;
+	(void)context;
+	if (sig == SIGUSR1)
+		c |= (1 << bit);
+	bit++;
+	if (bit == 8)
+	{
+		if (c == '\0')
+            ft_printf("\nMessage received from PID: %d\n", info->si_pid);
+		else
+			write(1, &c, 1);
+		bit = 0;
+		c = 0;
+	}
+	kill(info->si_pid, SIGUSR1);
 }
 
 int main()
 {
-    ft_printf("Server PID: %d\n", getpid());
+    struct  sigaction   act;
 
-    signal(SIGUSR1, handle_signal);
-    signal(SIGUSR2, handle_signal);
+    act.sa_sigaction = handle_signal;
+    act.sa_flags = SA_SIGINFO;
+    sigemptyset(&act.sa_mask);
 
+    if((sigaction(SIGUSR1, &act, NULL) == -1) || (sigaction(SIGUSR2, &act, NULL) == -1))
+        ft_printf("Error!");
+
+    ft_printf("PID: %d\n", getpid());
     while (1)
         pause();
 

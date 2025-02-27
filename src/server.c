@@ -1,0 +1,48 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   server.c                                           :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: bakarabu <bakarabu@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/02/27 21:15:01 by bakarabu          #+#    #+#             */
+/*   Updated: 2025/02/27 21:16:32 by bakarabu         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
+#include "minitalk.h"
+
+void	handle_signal(int sig, siginfo_t *info, void *context)
+{
+	static int	bit = 0;
+	static int	c = 0;
+
+	(void)context;
+	if (sig == SIGUSR1)
+		c += (1 << bit);
+	bit++;
+	if (bit == 8)
+	{
+		write(1, &c, 1);
+		bit = 0;
+		c = 0;
+	}
+	kill(info->si_pid, SIGUSR1);
+}
+
+int	main(void)
+{
+	struct sigaction	act;
+
+	act.sa_sigaction = handle_signal;
+	act.sa_flags = SA_SIGINFO;
+	sigemptyset(&act.sa_mask);
+	if ((sigaction(SIGUSR1, &act, NULL) == -1))
+		ft_printf("Error!");
+	else if (sigaction(SIGUSR2, &act, NULL) == -1)
+		ft_printf("Error!");
+	ft_printf("PID: %d\n", getpid());
+	while (1)
+		pause();
+	return (0);
+}
